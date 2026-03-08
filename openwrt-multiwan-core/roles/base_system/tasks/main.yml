@@ -1,0 +1,49 @@
+---
+# base_system – bootstrap packages, services, and firewall offloading
+
+- name: Update opkg package feeds
+  ansible.builtin.shell: opkg update
+  changed_when: false
+  tags: [packages]
+
+- name: Install required packages
+  ansible.builtin.shell: "opkg install {{ item }}"
+  loop: "{{ openwrt_packages }}"
+  register: opkg_install
+  changed_when: "'Installing' in opkg_install.stdout"
+  tags: [packages]
+
+# --- Software flow offloading (kernel conntrack shortcut) ---
+- name: Enable software flow offloading in firewall
+  ansible.builtin.shell: uci set firewall.@defaults[0].flow_offloading='1'
+  when: software_flow_offload | default(false)
+  notify: commit firewall
+  tags: [firewall]
+
+- name: Commit firewall changes
+  ansible.builtin.shell: uci commit firewall
+  when: software_flow_offload | default(false)
+  tags: [firewall]
+
+# --- Enable core services ---
+- name: Enable mwan3 service
+  ansible.builtin.shell: /etc/init.d/mwan3 enable
+  changed_when: false
+  tags: [services]
+
+- name: Start mwan3 service
+  ansible.builtin.shell: /etc/init.d/mwan3 start
+  changed_when: false
+  tags: [services]
+
+- name: Enable SQM service
+  ansible.builtin.shell: /etc/init.d/sqm enable
+  changed_when: false
+  when: sqm_enabled | default(false)
+  tags: [services]
+
+- name: Start SQM service
+  ansible.builtin.shell: /etc/init.d/sqm start
+  changed_when: false
+  when: sqm_enabled | default(false)
+  tags: [services]

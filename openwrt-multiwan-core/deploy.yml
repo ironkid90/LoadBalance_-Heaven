@@ -1,0 +1,55 @@
+---
+# deploy.yml – Master playbook for OpenWrt multi-WAN edge router
+#
+# Usage:
+#   ansible-playbook deploy.yml
+#   ansible-playbook deploy.yml --ask-vault-pass
+#   ansible-playbook deploy.yml --tags network
+#   ansible-playbook deploy.yml --check  (dry-run)
+
+- name: Deploy OpenWrt Multi-WAN Edge Router
+  hosts: openwrt_routers
+  # OpenWrt SSH drops straight into root — no privilege escalation needed
+  become: false
+  gather_facts: false
+
+  # Gather only the minimum facts required (network, hardware)
+  pre_tasks:
+    - name: Gather minimal facts
+      ansible.builtin.setup:
+        gather_subset:
+          - "!all"
+          - network
+      tags: [always]
+
+  roles:
+    - role: base_system
+      tags: [base, packages]
+
+    - role: interfaces_macvlan
+      tags: [network, interfaces]
+
+    - role: routing_mwan3
+      tags: [mwan3, routing]
+
+    - role: proxy_gost
+      tags: [gost, proxy]
+
+    - role: qos_sqm
+      tags: [sqm, qos]
+
+  # ---------- Post-role tasks ----------
+  post_tasks:
+    - name: Deploy sysctl.conf template
+      ansible.builtin.template:
+        src: templates/sysctl.conf.j2
+        dest: /etc/sysctl.conf
+        owner: root
+        group: root
+        mode: "0644"
+      tags: [sysctl]
+
+    - name: Apply sysctl settings
+      ansible.builtin.shell: sysctl -p /etc/sysctl.conf
+      changed_when: false
+      tags: [sysctl]

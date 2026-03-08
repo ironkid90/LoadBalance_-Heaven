@@ -1,0 +1,52 @@
+---
+# qos_sqm – configure SQM/CAKE via UCI for traffic shaping
+
+- name: Set SQM interface
+  ansible.builtin.shell: uci set sqm.@queue[0].interface='{{ sqm_interface }}'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]
+
+- name: Set SQM download speed (kbps)
+  ansible.builtin.shell: uci set sqm.@queue[0].download='{{ sqm_download_kbps }}'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]
+
+- name: Set SQM upload speed (kbps)
+  ansible.builtin.shell: uci set sqm.@queue[0].upload='{{ sqm_upload_kbps }}'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]
+
+- name: Set SQM qdisc to CAKE
+  ansible.builtin.shell: uci set sqm.@queue[0].qdisc='{{ sqm_qdisc }}'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]
+
+- name: Set SQM script
+  ansible.builtin.shell: uci set sqm.@queue[0].script='{{ sqm_script }}'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]
+
+# Link-layer adaptation: 34 bytes covers VDSL (PTM) + PPPoE framing.
+# This is NOT the 44-byte ATM encapsulation; PTM has lower overhead.
+- name: Set SQM link layer adaptation
+  ansible.builtin.shell: uci set sqm.@queue[0].linklayer='{{ sqm_link_layer }}'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]
+
+- name: Set SQM overhead (34 bytes for VDSL + PPPoE, not ATM)
+  ansible.builtin.shell: uci set sqm.@queue[0].overhead='{{ sqm_overhead }}'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]
+
+- name: Enable SQM queue
+  ansible.builtin.shell: uci set sqm.@queue[0].enabled='1'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]

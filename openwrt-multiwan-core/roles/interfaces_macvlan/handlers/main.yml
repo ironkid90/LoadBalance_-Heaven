@@ -1,0 +1,9 @@
+---
+- name: commit and restart network
+  ansible.builtin.shell: |
+    uci commit network
+    /etc/init.d/network restart
+  listen: "commit and restart network"
+
+- name: restart network
+  ansible.builtin.shell: /etc/init.d/network restart

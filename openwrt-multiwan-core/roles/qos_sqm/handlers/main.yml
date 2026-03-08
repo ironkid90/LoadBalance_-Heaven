@@ -1,0 +1,6 @@
+---
+- name: commit and restart sqm
+  ansible.builtin.shell: |
+    uci commit sqm
+    /etc/init.d/sqm restart
+  listen: "commit and restart sqm"

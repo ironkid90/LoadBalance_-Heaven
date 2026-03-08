@@ -1,0 +1,4 @@
+---
+- name: restart gost
+  ansible.builtin.shell: /etc/init.d/gost restart
+  when: gost_enabled | default(false)
