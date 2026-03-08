@@ -34,6 +34,60 @@ python3 tpconf_bin_xml.py conf.xml conf_new.bin # convert XML to bin
 - `python -m unittest discover -s tests -v`
 - `python router_policy_route.py ensure --target-ip 192.168.0.60 --ppp-if auto --dry-run`
 
+## OpenWrt Multi-WAN IaC (Ansible)
+
+The `openwrt-multiwan-core/` directory contains an Infrastructure-as-Code setup that
+can deploy a complete multi-WAN edge router configuration to an OpenWrt x86 device
+(e.g. a repurposed Intel Celeron mining board).
+
+### Architecture Overview
+
+| Component | Purpose |
+|---|---|
+| **MACVLAN** (`kmod-macvlan`) | Virtual Ethernet ports from a single physical NIC |
+| **RNDIS USB** | 4G/LTE tethering over USB (`usb0`) |
+| **TCP BBR** (`kmod-tcp-bbr`) | Latency-based congestion control for lossy links |
+| **MWAN3** | Weighted round-robin load balancing + sticky sessions |
+| **GOST** | Local SOCKS5 proxy for session-spraying across WANs |
+| **SQM/CAKE** | Bufferbloat eradication with 34-byte VDSL+PPPoE overhead |
+| **Flow Offloading** | Kernel fast-path for established connections |
+
+### Quick Start
+
+```sh
+cd openwrt-multiwan-core
+
+# 1. Create a vault file for PPPoE credentials
+ansible-vault create group_vars/vault.yml
+#    Define vault_pppoe_username and vault_pppoe_password inside.
+
+# 2. Edit inventory/hosts.yml with the router's IP address
+
+# 3. Dry-run to verify what will change
+ansible-playbook deploy.yml --ask-vault-pass --check
+
+# 4. Deploy
+ansible-playbook deploy.yml --ask-vault-pass
+```
+
+### Selective Deployment
+
+Run only specific components using tags:
+
+```sh
+ansible-playbook deploy.yml --tags network     # Interfaces only
+ansible-playbook deploy.yml --tags mwan3        # MWAN3 policies only
+ansible-playbook deploy.yml --tags sqm          # SQM/CAKE only
+ansible-playbook deploy.yml --tags gost         # GOST proxy only
+ansible-playbook deploy.yml --tags sysctl       # BBR + sysctl only
+```
+
+### Hardware Evolution
+
+When transitioning from MACVLAN to a physical multi-port NIC (e.g. Intel i350-T4
+via PCIe x1 riser), update `group_vars/all.yml` to map WAN1 to the new physical
+interface (e.g. `eth1` instead of `veth1`) and re-run the playbook.
+
 ## Why?
 
 To recover your router's account/password or simply make changes to your router's configuration using the XML file.
