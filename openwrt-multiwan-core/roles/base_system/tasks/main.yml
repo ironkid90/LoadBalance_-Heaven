@@ -20,11 +20,6 @@
   notify: commit firewall
   tags: [firewall]
 
-- name: Commit firewall changes
-  ansible.builtin.shell: uci commit firewall
-  when: software_flow_offload | default(false)
-  tags: [firewall]
-
 # --- Enable core services ---
 - name: Enable mwan3 service
   ansible.builtin.shell: /etc/init.d/mwan3 enable
