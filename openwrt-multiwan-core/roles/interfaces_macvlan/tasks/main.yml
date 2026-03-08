@@ -47,14 +47,3 @@
     uci set network.lan.netmask='{{ lan_netmask }}'
   notify: commit and restart network
   tags: [network, lan]
-
-# ---------- Deploy full /etc/config/network from template ----------
-- name: Deploy network configuration template
-  ansible.builtin.template:
-    src: network.j2
-    dest: /etc/config/network
-    owner: root
-    group: root
-    mode: "0644"
-  notify: restart network
-  tags: [network, template]

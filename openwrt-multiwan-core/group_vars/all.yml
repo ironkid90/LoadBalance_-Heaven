@@ -12,6 +12,7 @@
 wan_vdsl_if: "eth0"          # Physical Ethernet — base for MACVLAN
 wan_4g_if: "usb0"            # USB-tethered 4G/LTE (RNDIS or CDC-Ether)
 macvlan_pppoe_if: "veth1"    # MACVLAN sub-interface carrying PPPoE
+# lan_if reserved for roles that need the physical LAN port name
 lan_if: "eth0"               # Base LAN interface (bridged by OpenWrt)
 
 # ---------- PPPoE Credentials (vault-encrypted) ----------

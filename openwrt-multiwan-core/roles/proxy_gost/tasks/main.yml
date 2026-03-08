@@ -31,10 +31,13 @@
 
       start_service() {
           procd_open_instance
+          # -L  = local SOCKS5 listener
+          # -F  = forward chain with interface binding via IP route hints
+          # strategy=round uses round-robin across the two forward nodes
           procd_set_param command /usr/local/bin/gost \
-              -L "socks5://0.0.0.0:{{ gost_listen_port }}" \
-              -F "forward+ssh://{{ macvlan_pppoe_if }}?strategy=round" \
-              -F "forward+ssh://{{ wan_4g_if }}?strategy=round"
+              -L "socks5://:{{ gost_listen_port }}" \
+              -F "socks5://:0?interface={{ macvlan_pppoe_if }}&strategy=round" \
+              -F "socks5://:0?interface={{ wan_4g_if }}&strategy=round"
           procd_set_param respawn 3600 5 5
           procd_set_param stdout 1
           procd_set_param stderr 1
