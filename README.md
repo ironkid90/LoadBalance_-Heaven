@@ -28,6 +28,12 @@ python3 tpconf_bin_xml.py conf.xml conf_new.bin # convert XML to bin
   - *OR* (for other platforms)
   - pip install pycryptodomex
 
+### Development checks
+
+- `python -m py_compile tpconf_bin_xml.py router_policy_route.py`
+- `python -m unittest discover -s tests -v`
+- `python router_policy_route.py ensure --target-ip 192.168.0.60 --ppp-if auto --dry-run`
+
 ## Why?
 
 To recover your router's account/password or simply make changes to your router's configuration using the XML file.
