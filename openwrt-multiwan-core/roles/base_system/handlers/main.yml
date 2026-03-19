@@ -1,0 +1,6 @@
+---
+- name: commit firewall
+  ansible.builtin.shell: uci commit firewall
+
+- name: restart firewall
+  ansible.builtin.shell: /etc/init.d/firewall restart

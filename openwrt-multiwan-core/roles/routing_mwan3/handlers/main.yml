@@ -1,0 +1,3 @@
+---
+- name: restart mwan3
+  ansible.builtin.shell: /etc/init.d/mwan3 restart

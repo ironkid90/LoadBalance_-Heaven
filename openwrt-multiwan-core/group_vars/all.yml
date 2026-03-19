@@ -1,0 +1,74 @@
+---
+# ============================================================
+# Global variables – OpenWrt Multi-WAN Edge Router
+# ============================================================
+# Sensitive credentials are stored in Ansible Vault.
+# Create the vault file with:
+#   ansible-vault create group_vars/vault.yml
+# and define vault_pppoe_username / vault_pppoe_password there.
+# ============================================================
+
+# ---------- WAN Interfaces ----------
+wan_vdsl_if: "eth0"          # Physical Ethernet — base for MACVLAN
+wan_4g_if: "usb0"            # USB-tethered 4G/LTE (RNDIS or CDC-Ether)
+macvlan_pppoe_if: "veth1"    # MACVLAN sub-interface carrying PPPoE
+# lan_if reserved for roles that need the physical LAN port name
+lan_if: "eth0"               # Base LAN interface (bridged by OpenWrt)
+
+# ---------- PPPoE Credentials (vault-encrypted) ----------
+pppoe_username: "{{ vault_pppoe_username }}"
+pppoe_password: "{{ vault_pppoe_password }}"
+
+# ---------- Network ----------
+lan_ipaddr: "192.168.1.1"
+lan_netmask: "255.255.255.0"
+pppoe_mtu: 1492
+pppoe_mru: 1492
+
+# ---------- MWAN3 Load Balancing ----------
+mwan3_policy: "balanced"
+mwan3_vdsl_weight: 1
+mwan3_4g_weight: 2
+mwan3_sticky: true
+mwan3_ping_target: "1.1.1.1"
+mwan3_ping_interval: 5        # seconds between health-check pings
+mwan3_ping_timeout: 2         # seconds before a single ping is lost
+mwan3_ping_failure_count: 3   # consecutive failures to mark interface down
+
+# ---------- TCP BBR ----------
+tcp_congestion_control: "bbr"
+enable_bbr: true
+
+# ---------- SQM / CAKE QoS ----------
+sqm_enabled: true
+sqm_interface: "pppoe-wan"
+sqm_download_kbps: 14000      # ~14 Mbps VDSL downstream
+sqm_upload_kbps: 900           # ~900 kbps VDSL upstream
+sqm_qdisc: "cake"
+sqm_script: "piece_of_cake.qos"
+sqm_link_layer: "ethernet"
+# 34 bytes = 8 PPPoE + 14 Ethernet + 4 VLAN + 8 misc framing
+# NOT the 44-byte ATM overhead — this board uses VDSL (PTM, not ATM)
+sqm_overhead: 34
+
+# ---------- GOST Proxy ----------
+gost_enabled: true
+gost_listen_port: 1080
+gost_version: "2.11.5"
+gost_arch: "linux_amd64"
+
+# ---------- Flow Offloading ----------
+software_flow_offload: true
+
+# ---------- Package List (base_system role) ----------
+openwrt_packages:
+  - kmod-macvlan
+  - kmod-tcp-bbr
+  - mwan3
+  - luci-app-mwan3
+  - sqm-scripts
+  - luci-app-sqm
+  - kmod-usb-net-rndis
+  - kmod-usb-net-cdc-ether
+  - curl
+  - iptables-mod-conntrack-extra

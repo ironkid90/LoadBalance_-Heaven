@@ -1,0 +1,18 @@
+---
+# qos_sqm – configure SQM/CAKE via UCI for traffic shaping
+
+# Link-layer adaptation: 34 bytes covers VDSL (PTM) + PPPoE framing.
+# This is NOT the 44-byte ATM encapsulation; PTM has lower overhead.
+- name: Configure SQM/CAKE queue via UCI
+  ansible.builtin.shell: |
+    uci set sqm.@queue[0].interface='{{ sqm_interface }}'
+    uci set sqm.@queue[0].download='{{ sqm_download_kbps }}'
+    uci set sqm.@queue[0].upload='{{ sqm_upload_kbps }}'
+    uci set sqm.@queue[0].qdisc='{{ sqm_qdisc }}'
+    uci set sqm.@queue[0].script='{{ sqm_script }}'
+    uci set sqm.@queue[0].linklayer='{{ sqm_link_layer }}'
+    uci set sqm.@queue[0].overhead='{{ sqm_overhead }}'
+    uci set sqm.@queue[0].enabled='1'
+  when: sqm_enabled | default(false)
+  notify: commit and restart sqm
+  tags: [sqm]

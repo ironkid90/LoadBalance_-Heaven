@@ -1,3 +1,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+
+# Ansible artifacts
+*.retry
+openwrt-multiwan-core/group_vars/vault.yml

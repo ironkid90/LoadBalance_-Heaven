@@ -1,0 +1,17 @@
+---
+# routing_mwan3 – deploy MWAN3 config template and reload the service
+
+- name: Deploy mwan3 configuration template
+  ansible.builtin.template:
+    src: mwan3.j2
+    dest: /etc/config/mwan3
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart mwan3
+  tags: [mwan3]
+
+- name: Ensure mwan3 service is enabled
+  ansible.builtin.shell: /etc/init.d/mwan3 enable
+  changed_when: false
+  tags: [mwan3]
